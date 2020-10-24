@@ -1,5 +1,5 @@
 
-DEFAULT_FOLDER = jorne_ble/master
+DEFAULT_FOLDER = corne_ble/master
 
 NRF_DEBUG = no
 

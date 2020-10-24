@@ -1,5 +1,5 @@
-#ifndef JORNE_BLE_H_
-#define JORNE_BLE_H_
+#ifndef CORNE_BLE_H_
+#define CORNE_BLE_H_
 
 #include "quantum.h"
 
@@ -34,4 +34,4 @@ KC_##L33, KC_##L00, KC_##L01, KC_##L02, KC_##L03, KC_##L04, KC_##L05,           
   )
 
 
-#endif /* JORNE_BLE_H_ */
+#endif /* CORNE_BLE_H_ */

@@ -1,6 +1,6 @@
 @echo off
 
-set keyboard=jorne_ble
+set keyboard=corne_ble
 set keymap=default
 set role=master
 

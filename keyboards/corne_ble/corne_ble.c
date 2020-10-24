@@ -1,4 +1,4 @@
-#include "jorne_ble.h"
+#include "corne_ble.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 #include "nrf_power.h"
