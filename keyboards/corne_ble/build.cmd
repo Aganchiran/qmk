@@ -43,6 +43,13 @@ set CONVERT_TO_UF2_SCRIPT=%BS_PROJ_ROOT%\keyboards\%keyboard%\uf2conv.py
 set FILE_TO_CONVERT=%BS_PROJ_ROOT%\.build\%file%
 set DESTINATION_FILE=%BS_PROJ_ROOT%\keyboards\%keyboard%\precompiled\%role%.uf2
 
+::Name of the backup file.
+set timestamp=%DATE:/=-%_%TIME::=-%
+set destinationFile=%timestamp%__%role%.uf2
+
+::Paths for copy .uf2 into the backup fonder.
+set DESTINATION_FILE_BACKUP=%BS_PROJ_ROOT%\keyboards\%keyboard%\precompiled\backup\%destinationFile%
+
 ::::END CALCULATED PATHS::::
 
 
@@ -60,5 +67,7 @@ bash -c "cd %FS_PROJ_ROOT% && export NRFSDK15_ROOT=%FS_SDK_ROOT% && make %keyboa
 ::Convert the .hex file into .uf2 file.
 echo Converting '%file%' into '%role%.uf2'
 python %CONVERT_TO_UF2_SCRIPT% %FILE_TO_CONVERT% -o %DESTINATION_FILE% -c -f 0xADA52840
+
+echo F|xcopy "%DESTINATION_FILE%" "%DESTINATION_FILE_BACKUP%"
 
 ::::END OPERATIONS::::
