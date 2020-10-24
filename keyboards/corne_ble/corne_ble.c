@@ -94,7 +94,7 @@ void nrfmicro_init(void) {
 
 #ifdef USE_TP4054_CTRL
   //nrf_gpio_cfg_input(PROG_PIN, NRF_GPIO_PIN_NOPULL); // disabled
-  //nrf_gpio_cfg_output(PROG_PIN); nrf_gpio_pin_write(PROG_PIN, 0); // enabled
+  nrf_gpio_cfg_output(PROG_PIN); nrf_gpio_pin_write(PROG_PIN, 0); // enabled
 #endif
 
   nrfmicro_power_enable(true);
