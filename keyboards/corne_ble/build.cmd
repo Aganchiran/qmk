@@ -1,41 +1,64 @@
 @echo off
 
-set keyboard=corne_ble
-set keymap=default
-set role=master
+::::PARAMETERS::::
 
-::echo "Building with WSL1"
-::wsl --set-default Ubuntu
-::set SDK_ROOT=/c/mnt/SDK/nRF5_SDK_15.0.0_a53641a
-::set PROJ_ROOT=../
+::Synthax:  build.cmd <role> <keymap> <keyboard> <project_path> <sdk_path>
+set role=%1
+set keymap=%2
+set keyboard=%3
 
-echo "Building with WSL2"
-wsl --set-default Ubuntu-20.04
-set SDK_ROOT=~/nRF5_SDK_15.0.0_a53641a
-set PROJ_ROOT=~/qmk
+set project_path=%4
+set sdk_path=%5
 
-if "%1"=="slave" set role=slave
+::Default values.
+if "%5"=="" set sdk_path=D:\Proyectos\Corne-ble\nRF5_SDK_15.0.0_a53641a
+if "%4"=="" set project_path=D:\Proyectos\Corne-ble\qmk
 
-echo building %role%
+if "%3"=="" set keyboard=corne_ble
+if "%2"=="" set keymap=default
+if "%1"=="" set role=master
 
+::::END PARAMETERS::::
+
+
+
+
+::::CALCULATED PATHS::::
+
+::Backslash path for Windows console interpretation.
+set BS_PROJ_ROOT=%project_path%
+
+::Forward slash paths for Linux console interpretation.
+set FS_SDK_ROOT=%sdk_path:\=/%
+set FS_PROJ_ROOT=%project_path:\=/%
+::Change disk root format form D: to /D for Linux console interpretation.
+set FS_SDK_ROOT=/%FS_SDK_ROOT:~0,1%%FS_SDK_ROOT:~2%
+set FS_PROJ_ROOT=/%FS_PROJ_ROOT:~0,1%%FS_PROJ_ROOT:~2%
+
+::Name of the generated .hex file.
 set file=%keyboard%_%role%_%keymap%.hex
 
-bash -c "cd %PROJ_ROOT% && export NRFSDK15_ROOT=%SDK_ROOT% && make %keyboard%/%role%:%keymap%" || exit
+::Paths for .hex to .uf2 converter.
+set CONVERT_TO_UF2_SCRIPT=%BS_PROJ_ROOT%\keyboards\%keyboard%\uf2conv.py
+set FILE_TO_CONVERT=%BS_PROJ_ROOT%\.build\%file%
+set DESTINATION_FILE=%BS_PROJ_ROOT%\keyboards\%keyboard%\precompiled\%role%.uf2
 
-cd ..\..\.build
+::::END CALCULATED PATHS::::
 
-%~dp0/uf2conv.py %file% -c -f 0xADA52840
 
-copy /Y flash.uf2 %~dp0\precompiled\%role%.uf2
 
-echo dfu| plink.exe -serial com9
 
-echo Waiting for the UF2 drive. Press Reset twice...
+::::OPERATIONS::::
 
-:loop
-if not exist e:\ goto :loop
+echo "Building with WSL2"
+wsl --setdefault Ubuntu-20.04
 
-timeout 1
+::Create hex file.
+echo Building role '%role%' into file '%file%'
+bash -c "cd %FS_PROJ_ROOT% && export NRFSDK15_ROOT=%FS_SDK_ROOT% && make %keyboard%/%role%:%keymap%" || exit
 
-copy flash.uf2 e:\
+::Convert the .hex file into .uf2 file.
+echo Converting '%file%' into '%role%.uf2'
+python %CONVERT_TO_UF2_SCRIPT% %FILE_TO_CONVERT% -o %DESTINATION_FILE% -c -f 0xADA52840
 
+::::END OPERATIONS::::
