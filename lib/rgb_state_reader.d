@@ -1,6 +1,6 @@
-.build/obj_corne_ble_slave_default/../../lib/rgb_state_reader.o: \
+.build/obj_corne_ble_master_default/../../lib/rgb_state_reader.o: \
  keyboards/corne_ble/keymaps/default/../../lib/rgb_state_reader.c \
- keyboards/corne_ble/config.h keyboards/corne_ble/slave/config.h \
+ keyboards/corne_ble/config.h keyboards/corne_ble/master/config.h \
  keyboards/corne_ble/board/custom_board.h keyboards/corne_ble/corne_ble.h \
  quantum/quantum.h tmk_core/common/wait.h \
  D:/Proyectos/Corne-ble/nRF5_SDK_15.0.0_a53641a/components/libraries/delay/nrf_delay.h \
@@ -84,7 +84,7 @@
 
 keyboards/corne_ble/config.h:
 
-keyboards/corne_ble/slave/config.h:
+keyboards/corne_ble/master/config.h:
 
 keyboards/corne_ble/board/custom_board.h:
 

@@ -1,6 +1,6 @@
-.build/obj_corne_ble_slave_default/../../lib/mode_icon_reader.o: \
+.build/obj_corne_ble_master_default/../../lib/mode_icon_reader.o: \
  keyboards/corne_ble/keymaps/default/../../lib/mode_icon_reader.c \
- keyboards/corne_ble/config.h keyboards/corne_ble/slave/config.h \
+ keyboards/corne_ble/config.h keyboards/corne_ble/master/config.h \
  keyboards/corne_ble/board/custom_board.h \
  keyboards/corne_ble/keymaps/default/../../lib/crkbd.h quantum/quantum.h \
  tmk_core/common/wait.h \
@@ -85,7 +85,7 @@
 
 keyboards/corne_ble/config.h:
 
-keyboards/corne_ble/slave/config.h:
+keyboards/corne_ble/master/config.h:
 
 keyboards/corne_ble/board/custom_board.h:
 
