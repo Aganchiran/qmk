@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 
 ::::PARAMETERS::::
 
@@ -11,12 +12,16 @@ set project_path=%4
 set sdk_path=%5
 
 ::Default values.
-if "%5"=="" set sdk_path=D:\Proyectos\Corne-ble\nRF5_SDK_15.0.0_a53641a
-if "%4"=="" set project_path=D:\Proyectos\Corne-ble\qmk
-
-if "%3"=="" set keyboard=corne_ble
-if "%2"=="" set keymap=default
 if "%1"=="" set role=master
+if "%2"=="" set keymap=default
+if "%3"=="" set keyboard=corne_ble
+
+set root_directory=%~dp0
+set root_directory=%root_directory:/=\%
+set root_directory=!root_directory:\qmk\keyboards\%keyboard%=!
+
+if "%4"=="" set project_path=%root_directory%qmk
+if "%5"=="" set sdk_path=%root_directory%nRF5_SDK_15.0.0_a53641a
 
 ::::END PARAMETERS::::
 
