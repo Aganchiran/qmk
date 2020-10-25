@@ -51,7 +51,7 @@ void check_ble_switch(bool init) {
   }
 #else
   // just use BT for now
-  bool ble_flag = true;
+  bool ble_flag = has_usb() == false;
   (void)ble_flag; // may be unused on slave
   set_usb_enabled(!ble_flag);
   set_ble_enabled(ble_flag);
