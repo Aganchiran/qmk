@@ -102,6 +102,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /////FUNCTIONS/////
 ///////////////////
 
+void nrfmicro_power_enable(bool enable);
 bool has_usb(void);
 
 uint32_t layer_state_set_user(uint32_t state) {
@@ -274,6 +275,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
             break;
+
+        case RGB_TOG:
+            nrfmicro_power_enable(rgblight_config.enable);
+            break;
+            return false;
 
         case ENT_SLP:
             if (!record->event.pressed) {
