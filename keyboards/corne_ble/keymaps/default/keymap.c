@@ -15,6 +15,9 @@ extern keymap_config_t keymap_config;
 
 
 
+////////////////////////////////
+/////CUSTOM KEYS AND LAYERS/////
+////////////////////////////////
 
 // Each layer gets a name for readability, which is then used in the keymap matrix below.
 // The underscores don't mean anything - you can have a layer called STUFF or any other name.
@@ -46,7 +49,9 @@ enum custom_keycodes {
 
 
 
-
+////////////////
+/////KEYMAP/////
+////////////////
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -79,7 +84,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		),
 
 [_ADJUST] = LAYOUT(\
-		RGB_TOG,	XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,					RGB_M_P,	RGB_M_B,	RGB_M_R,	RGB_M_SW,	RGB_M_SN,	_______,	 \
+		RGB_TOG,	XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,					RGB_M_P,	RGB_M_B,	RGB_M_R,	RGB_M_SW,	RGB_M_SN,	_______, \
 		_______,	RGB_MOD,	RGB_SAI,	RGB_HUI,	XXXXXXX,	RGB_VAI,					RGB_M_K,	RGB_M_X,	RGB_M_G,	RGB_M_T,	XXXXXXX,	_______, \
 		_______,	RGB_RMOD,	RGB_SAD,	RGB_HUD,	XXXXXXX,	RGB_VAD,					XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,	ENT_SLP,	_______, \
 		                                    _______,	_______,	_______,					_______,	_______,	_______\
@@ -88,21 +93,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
 
+///////////////////
+/////FUNCTIONS/////
+///////////////////
 
-
-void nrfmicro_power_enable(bool enable);
 bool has_usb(void);
-void set_keylog(uint16_t keycode, keyrecord_t *record);
 
-
+//This two functions are used to access _ADJUST layer by holding the keys to access to _LOWER and _RISE at the same time
 uint32_t layer_state_set_user(uint32_t state) {
     return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
-}
-
-void persistent_default_layer_set(uint16_t default_layer) {
-    eeconfig_update_default_layer(default_layer);
-    default_layer_set(default_layer);
-    layer_state_set(default_layer);
 }
 
 void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
@@ -115,7 +114,9 @@ void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
 
 
 
-
+///////////////////////////////
+/////CUSTOM KEYS BEHAVIOUR/////
+///////////////////////////////
 
 static bool shift_down = false;
 static bool ctrl_down = false;
@@ -130,10 +131,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef SSD1306OLED
     iota_gfx_flush(); // wake up screen
 #endif
-
-    if (record->event.pressed) {
-        set_keylog(keycode, record);
-    }
 
     switch (keycode) {
 
@@ -302,45 +299,42 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 
 
-
+/////////////////////
+/////OLED SCREEN/////
+/////////////////////
 
 #ifdef SSD1306OLED
+
+const char *read_rgb_info(void);
+
+void matrix_render_user(struct CharacterMatrix *matrix) {
+
+    char oled_first_line[64], oled_third_line[32], vc[16];
+    int vcc = get_vcc();
+
+    #if (IS_LEFT_HAND)
+        sprintf (oled_first_line, "Master: %s%s%s",
+            get_usb_enabled() && !get_ble_enabled() ? "USB mode":"",
+            get_ble_enabled() && ble_connected() ? "connected":"",
+            get_ble_enabled() && !ble_connected() ? "disconnected":""
+            );
+    #else
+        sprintf(oled_first_line, "Slave: %s", ble_connected() ? "connected" : "disconnected");
+    #endif
+
+    sprintf(vc, "%4dmV", vcc);
+    sprintf(oled_third_line, "Bat: %s USB: %s", vcc<500 || vcc>4400 ? "off   " : vc, has_usb()? "on":"off");
+
+    matrix_write_ln(matrix, oled_first_line);
+    matrix_write_ln(matrix, read_rgb_info());
+    matrix_write_ln(matrix, oled_third_line);
+
+}
 
 void matrix_update(struct CharacterMatrix *dest, const struct CharacterMatrix *source) {
     if (memcmp(dest->display, source->display, sizeof(dest->display))) {
         memcpy(dest->display, source->display, sizeof(dest->display));
         dest->dirty = true;
-    }
-}
-
-
-const char *read_rgb_info(void);
-
-void matrix_render_user(struct CharacterMatrix *matrix) {
-    {
-        char str[64];
-
-#if (IS_LEFT_HAND)
-        sprintf (str, "Master: %s%s%s",
-            get_usb_enabled() && !get_ble_enabled() ? "USB mode":"",
-            get_ble_enabled() && ble_connected() ? "connected":"",
-            get_ble_enabled() && !ble_connected() ? "disconnected":""
-            );
-#else
-        sprintf(str, "Slave: %s", ble_connected() ? "connected" : "disconnected");
-#endif
-
-        matrix_write_ln(matrix, str);
-    }
-
-    matrix_write_ln(matrix, read_rgb_info());
-
-    {
-        char vc[16], str[32];
-        int vcc = get_vcc();
-        sprintf(vc, "%4dmV", vcc);
-        sprintf(str, "Bat: %s USB: %s", vcc<500 || vcc>4400 ? "off   " : vc, has_usb()? "on":"off");
-        matrix_write_ln(matrix, str);
     }
 }
 
