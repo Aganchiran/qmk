@@ -14,6 +14,9 @@ extern keymap_config_t keymap_config;
 
 static bool power_tab = false;
 static bool toggle_enable = false;
+static bool is_oneshot_enable = false;
+static uint16_t oneshot_key = KC_NO;
+static uint16_t fl_win_timer = 0;
 
 
 
@@ -40,7 +43,7 @@ enum custom_keycodes {
     LOWER,
     RAISE,
     POWER_TAB,
-    FL_PT,
+    FL_WIN,
     TOGGLE_MODS,
     ADJUST
 };
@@ -61,7 +64,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_ESC,		KC_Q,		KC_W,		KC_E,		KC_R,		KC_T,						KC_Y,		KC_U,		KC_I,		KC_O,		KC_P,		KC_TAB, \
 		KC_LSFT,	KC_A,		KC_S,		KC_D,		KC_F,		KC_G,						KC_H,		KC_J,		KC_K,		KC_L,		KC_QUOT,	RSFT_T(KC_CAPS), \
 		KC_LCTL,	KC_Z,		KC_X,		KC_C,		KC_V,		KC_B,						KC_N,		KC_M,		KC_COMM,	KC_DOT,		KC_SCLN,	KC_LALT, \
-											FL_PT,		KC_SPC,		LT(_RAISE, KC_ENT),			KC_RALT,	KC_BSPC,	MO(_LOWER)\
+											FL_WIN,		KC_SPC,		LT(_RAISE, KC_ENT),			KC_RALT,	KC_BSPC,	MO(_LOWER)\
 		),
 
 [_LOWER] = LAYOUT(\
@@ -161,6 +164,22 @@ void endPowerTab() {
     }
 }
 
+void startOneShot(uint16_t keycode) {
+    if (!is_oneshot_enable) {
+        is_oneshot_enable = true;
+        oneshot_key = keycode;
+        register_code(keycode);
+    }
+}
+
+void endOneShot() {
+    if (is_oneshot_enable) {
+        unregister_code(oneshot_key);
+        is_oneshot_enable = false;
+        oneshot_key = KC_NO;
+    }
+}
+
 ///////////////////////////////
 /////CUSTOM KEY BEHAVIOURS/////
 ///////////////////////////////
@@ -181,12 +200,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
 
-        case FL_PT:
+        case FL_WIN:
             if (record->event.pressed) {
                 layer_on(_FL);
+                fl_win_timer = timer_read();
             } else {
                 endPowerTab();
                 layer_off(_FL);
+
+                if(timer_elapsed(fl_win_timer) < TAPPING_TERM){
+                    if (is_oneshot_enable) {
+                        endOneShot();
+                    } else {
+                        startOneShot(KC_LWIN);
+                    }
+                }
             }
             return false;
             break;
@@ -252,6 +280,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 sleep_mode_enter();
             }
             return false;
+    }
+
+    if (!record->event.pressed) {
+        endOneShot();
     }
 
     return true;
