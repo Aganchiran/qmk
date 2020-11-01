@@ -12,6 +12,8 @@ extern rgblight_config_t rgblight_config; //This line allows macro to read curre
 #endif
 extern keymap_config_t keymap_config;
 
+static bool power_tab = false;
+static bool toggle_enable = false;
 
 
 
@@ -39,7 +41,7 @@ enum custom_keycodes {
     RAISE,
     POWER_TAB,
     FL_PT,
-    KEY_LOCK,
+    TOGGLE_MODS,
     ADJUST
 };
 
@@ -65,7 +67,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_LOWER] = LAYOUT(\
 		_______,	KC_DQUO,	KC_LWIN,	KC_EXLM,	KC_QUES,	XXXXXXX,					KC_AMPR,	KC_PIPE,	KC_PSCR,	XXXXXXX,	KC_PERC,	_______, \
 		_______,	KC_AT,		KC_DLR,		KC_LPRN,	KC_RPRN,	XXXXXXX,					KC_HASH,	XXXXXXX,	XXXXXXX,	XXXXXXX,	KC_GRV,		_______, \
-		_______,	XXXXXXX,	KC_CIRC,	KC_LBRC,	KC_RBRC,	XXXXXXX,					XXXXXXX,	KC_MINS,	XXXXXXX,	XXXXXXX,	XXXXXXX,	KEY_LOCK, \
+		_______,	XXXXXXX,	KC_CIRC,	KC_LBRC,	KC_RBRC,	XXXXXXX,					XXXXXXX,	KC_MINS,	XXXXXXX,	XXXXXXX,	XXXXXXX,	TOGGLE_MODS, \
 											_______,	_______,	_______,					_______,	_______,	_______\
 		),
 
@@ -99,7 +101,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 bool has_usb(void);
 
-//This two functions are used to access _ADJUST layer by holding the keys to access to _LOWER and _RISE at the same time
 uint32_t layer_state_set_user(uint32_t state) {
     return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
 }
@@ -112,19 +113,57 @@ void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
     }
 }
 
+bool is_mod_down(uint16_t modifier) {
+    return get_mods() & MOD_BIT(modifier);
+}
 
+void normal_key(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed) {
+        register_code(keycode);
+    } else {
+        unregister_code(keycode);
+    }
+}
+
+void normal_key_without_mod(uint16_t keycode, uint16_t modifier, keyrecord_t *record) {
+    if (record->event.pressed) {
+        unregister_code(modifier);
+        register_code(keycode);
+        register_code(modifier);
+    } else {
+        unregister_code(keycode);
+    }
+}
+
+void toggle_mod(uint16_t modifier, keyrecord_t *record) {
+    if (!record->event.pressed) {
+
+        if (is_mod_down(modifier)) {
+            unregister_code(modifier);
+        } else {
+            register_code(modifier);
+        }
+
+    }
+}
+
+void startPowerTab() {
+    if (!power_tab) {
+        power_tab = true;
+        register_code(KC_LALT);
+    }
+}
+
+void endPowerTab() {
+    if (power_tab) {
+        power_tab = false;
+        unregister_code(KC_LALT);
+    }
+}
 
 ///////////////////////////////
-/////CUSTOM KEYS BEHAVIOUR/////
+/////CUSTOM KEY BEHAVIOURS/////
 ///////////////////////////////
-
-static bool shift_down = false;
-static bool ctrl_down = false;
-static bool alt_down = false;
-static bool power_tab = false;
-
-static bool toggle_enable = false;
-
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
@@ -136,121 +175,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         case POWER_TAB:
             if (record->event.pressed) {
-                power_tab = true;
-                register_code(KC_LALT);
-                register_code(KC_TAB);
-            } else {
-                unregister_code(KC_TAB);
+                startPowerTab();
             }
-            return false;
-            break;
-
-        case KC_LSFT:
-            if (record->event.pressed) {
-
-                if(!toggle_enable) {
-                    shift_down = true;
-                }
-                register_code(KC_LSFT);
-
-            } else {
-
-                if (!toggle_enable) {
-
-                    unregister_code(KC_LSFT);
-                    unregister_code(KC_DEL);
-                    shift_down = false;
-
-                } else {
-                    if (shift_down) {
-                        unregister_code(KC_LSFT);
-                        unregister_code(KC_DEL);
-                        shift_down = false;
-                    } else {
-                        shift_down = true;
-                        register_code(KC_LSFT);
-                    }
-                }
-
-            }
-            return false;
-            break;
-
-        case KC_LCTL:
-            if (record->event.pressed) {
-
-                if(!toggle_enable) {
-                    ctrl_down = true;
-                }
-                register_code(KC_LCTL);
-
-            } else {
-
-                if (!toggle_enable) {
-
-                    unregister_code(KC_LCTL);
-                    ctrl_down = false;
-
-                } else {
-                    if (ctrl_down) {
-                        unregister_code(KC_LCTL);
-                        ctrl_down = false;
-                    } else {
-                        ctrl_down = true;
-                        register_code(KC_LCTL);
-                    }
-                }
-
-            }
-            return false;
-            break;
-
-        case KC_LALT:
-            if (record->event.pressed) {
-
-                if(!toggle_enable) {
-                    alt_down = true;
-                }
-                register_code(KC_LALT);
-
-            } else {
-
-                if (!toggle_enable) {
-
-                    unregister_code(KC_LALT);
-                    alt_down = false;
-
-                } else {
-                    if (alt_down) {
-                        unregister_code(KC_LALT);
-                        alt_down = false;
-                    } else {
-                        alt_down = true;
-                        register_code(KC_LALT);
-                    }
-                }
-
-            }
-            return false;
-            break;
-
-        case KC_BSPC:
-            if (record->event.pressed) {
-                if (shift_down) {
-                    unregister_code(KC_LSFT);
-                    register_code(KC_DEL);
-                } else {
-                    register_code(KC_BSPC);
-                }
-
-            } else {
-                if (shift_down) {
-                    unregister_code(KC_DEL);
-                    register_code(KC_LSFT);
-                } else {
-                    unregister_code(KC_BSPC);
-                }
-            }
+            normal_key(KC_TAB, record);
             return false;
             break;
 
@@ -258,25 +185,60 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 layer_on(_FL);
             } else {
-
-                if (power_tab) {
-                    unregister_code(KC_LALT);
-                    power_tab = false;
-                }
-
+                endPowerTab();
                 layer_off(_FL);
-
             }
             return false;
             break;
 
-        case KEY_LOCK:
+        case KC_BSPC:
+            if (is_mod_down(KC_LSFT)) {
+                normal_key_without_mod(KC_DEL, KC_LSFT, record);
+            } else {
+                normal_key(KC_BSPC, record);
+            }
+            return false;
+            break;
+
+        case KC_LSFT:
+            if (!record->event.pressed) {
+                unregister_code(KC_DEL);
+            }
+
+            if (toggle_enable) {
+                toggle_mod(KC_LSFT, record);
+            } else {
+                normal_key(KC_LSFT, record);
+            }
+            return false;
+            break;
+
+        case KC_LCTL:
+            if (toggle_enable) {
+                toggle_mod(KC_LCTL, record);
+            } else {
+                normal_key(KC_LCTL, record);
+            }
+            return false;
+            break;
+
+        case KC_LALT:
+            if (toggle_enable) {
+                toggle_mod(KC_LALT, record);
+            } else {
+                normal_key(KC_LALT, record);
+            }
+            return false;
+            break;
+
+        case TOGGLE_MODS:
             if (record->event.pressed) {
                 if (toggle_enable) {
 
                     toggle_enable = false;
-                    shift_down = false;
                     unregister_code(KC_LSFT);
+                    unregister_code(KC_LCTL);
+                    unregister_code(KC_LALT);
 
                 } else {
                     toggle_enable = true;
@@ -284,14 +246,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
             break;
-    }
 
-    if (!record->event.pressed) {
-        switch (keycode) {
-            case ENT_SLP:
+        case ENT_SLP:
+            if (!record->event.pressed) {
                 sleep_mode_enter();
-                return false;
-        }
+            }
+            return false;
     }
 
     return true;
