@@ -7,19 +7,14 @@
 
 #include "eeprom.h"
 
-// define variables for reactive RGB
-bool TOG_STATUS = false;
-int RGB_current_mode;
 #ifdef RGBLIGHT_ENABLE
-//Following line allows macro to read current RGB settings
-extern rgblight_config_t rgblight_config;
+extern rgblight_config_t rgblight_config; //This line allows macro to read current RGB settings
 #endif
+extern keymap_config_t keymap_config;
 
-const uint8_t is_master = IS_LEFT_HAND;
 
-void nrfmicro_power_enable(bool enable);
 
-bool has_usb(void);
+
 
 // Each layer gets a name for readability, which is then used in the keymap matrix below.
 // The underscores don't mean anything - you can have a layer called STUFF or any other name.
@@ -35,91 +30,23 @@ enum layer_number {
 };
 
 enum custom_keycodes {
-    AD_WO_L = SAFE_RANGE, /* Start advertising without whitelist  */
-    BLE_DIS,              /* Disable BLE HID sending              */
-    BLE_EN,               /* Enable BLE HID sending               */
-    USB_DIS,              /* Disable USB HID sending              */
-    USB_EN,               /* Enable USB HID sending               */
-    DELBNDS,              /* Delete all bonding                   */
-    ADV_ID0,              /* Start advertising to PeerID 0        */
-    ADV_ID1,              /* Start advertising to PeerID 1        */
-    ADV_ID2,              /* Start advertising to PeerID 2        */
-    ADV_ID3,              /* Start advertising to PeerID 3        */
-    ADV_ID4,              /* Start advertising to PeerID 4        */
-    BATT_LV,              /* Display battery level in milli volts */
-    DEL_ID0,              /* Delete bonding of PeerID 0           */
-    DEL_ID1,              /* Delete bonding of PeerID 1           */
-    DEL_ID2,              /* Delete bonding of PeerID 2           */
-    DEL_ID3,              /* Delete bonding of PeerID 3           */
-    DEL_ID4,              /* Delete bonding of PeerID 4           */
-    ENT_DFU,              /* Start bootloader                     */
-    ENT_SLP,              /* Deep sleep mode                      */
+    ENT_SLP = SAFE_RANGE, /* Deep sleep mode*/
     QWERTY,
     LOWER,
     RAISE,
     POWER_TAB,
     FL_PT,
     KEY_LOCK,
-    ADJUST,
-    RGBRST
+    ADJUST
 };
-
-
-extern keymap_config_t keymap_config;
 
 // Fillers to make layering more clear
 #define _______ KC_TRNS
 #define XXXXXXX KC_NO
-#define KC_XXXXX KC_NO
-#define KC_LOWER LOWER
-#define KC_RAISE RAISE
-#define KC_RST   RESET
-#define KC_LRST  RGBRST
-#define KC_LTOG  RGB_TOG
-#define KC_LHUI  RGB_HUI
-#define KC_LHUD  RGB_HUD
-#define KC_LSAI  RGB_SAI
-#define KC_LSAD  RGB_SAD
-#define KC_LVAI  RGB_VAI
-#define KC_LVAD  RGB_VAD
-#define KC_LSMOD RGB_SMOD
-#define KC_CTLTB CTL_T(KC_TAB)
-#define KC_GUIEI GUI_T(KC_LANG2)
-#define KC_ALTKN ALT_T(KC_LANG1)
 
 
-#define LOWER MO(_LOWER)
-#define RAISE MO(_RAISE)
-
-#define RBR_RGU MT(MOD_RGUI, KC_RBRC)
-#define F12_RGU MT(MOD_RGUI, KC_F12)
-#define PLS_LCT MT(MOD_LCTL, KC_PPLS)
-#define EQL_LCT MT(MOD_LCTL, KC_PEQL)
-#define APP_LCT MT(MOD_LCTL, KC_APP)
-#define EQL_RCT MT(MOD_RCTL, KC_PEQL)
-#define QUO_RCT MT(MOD_RCTL, KC_QUOT)
-#define APP_RCT MT(MOD_RCTL, KC_APP)
-#define MIN_RCT MT(MOD_RCTL, KC_MINS)
-#define EQL_LAL MT(MOD_LALT, KC_EQL)
-#define BSL_RAL MT(MOD_RALT, KC_BSLS)
-
-#define NBS_LCT MT(MOD_LCTL, KC_NUBS)
-#define BSH_LAL MT(MOD_LALT, KC_BSLS)
-#define APP_RAL MT(MOD_RALT, KC_APP)
-
-#define BSP_LSH MT(MOD_LSFT, KC_BSPC)
-#define SPC_RSH MT(MOD_RSFT, KC_SPC)
-#define DEL_RSE LT(_RAISE, KC_DEL)
-#define TAB_RSE LT(_RAISE, KC_TAB)
-#define ENT_LWR LT(_LOWER, KC_ENT)
-#define ESC_LWR LT(_LOWER, KC_ESC)
-
-#define SH_TG KC_TRNS
 
 
-uint32_t layer_state_set_user(uint32_t state) {
-    return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
-}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -154,10 +81,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_ADJUST] = LAYOUT(\
 		RGB_TOG,	XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,					RGB_M_P,	RGB_M_B,	RGB_M_R,	RGB_M_SW,	RGB_M_SN,	_______,	 \
 		_______,	RGB_MOD,	RGB_SAI,	RGB_HUI,	XXXXXXX,	RGB_VAI,					RGB_M_K,	RGB_M_X,	RGB_M_G,	RGB_M_T,	XXXXXXX,	_______, \
-		_______,	RGB_RMOD,	RGB_SAD,	RGB_HUD,	XXXXXXX,	RGB_VAD,					XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,	_______, \
+		_______,	RGB_RMOD,	RGB_SAD,	RGB_HUD,	XXXXXXX,	RGB_VAD,					XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,	ENT_SLP,	_______, \
 		                                    _______,	_______,	_______,					_______,	_______,	_______\
 		)
 };
+
+
+
+
+
+void nrfmicro_power_enable(bool enable);
+bool has_usb(void);
+void set_keylog(uint16_t keycode, keyrecord_t *record);
+
+
+uint32_t layer_state_set_user(uint32_t state) {
+    return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+}
 
 void persistent_default_layer_set(uint16_t default_layer) {
     eeconfig_update_default_layer(default_layer);
@@ -165,24 +105,17 @@ void persistent_default_layer_set(uint16_t default_layer) {
     layer_state_set(default_layer);
 }
 
-// Setting ADJUST layer RGB back to default
 void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
     if (IS_LAYER_ON(layer1) && IS_LAYER_ON(layer2)) {
-#ifdef RGBLIGHT_ENABLE
-        //rgblight_mode(RGB_current_mode);
-#endif
         layer_on(layer3);
     } else {
         layer_off(layer3);
     }
 }
 
-// When add source files to SRC in rules.mk, you can use functions.
-const char *read_layer_state(void);
-const char *read_logo(void);
-void set_keylog(uint16_t keycode, keyrecord_t *record);
-const char *read_keylog(void);
-const char *read_keylogs(void);
+
+
+
 
 static bool shift_down = false;
 static bool ctrl_down = false;
@@ -191,10 +124,8 @@ static bool power_tab = false;
 
 static bool toggle_enable = false;
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    char str[16];
 
-    //NRF_LOG_INFO("process_record_user, keycode: %d\n", keycode);
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 #ifdef SSD1306OLED
     iota_gfx_flush(); // wake up screen
@@ -202,115 +133,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (record->event.pressed) {
         set_keylog(keycode, record);
-        //set_timelog();
     }
 
     switch (keycode) {
-        case RGB_TOG:
-            if (record->event.pressed) {
-                // only enable the power for now, never disable
-                if (!rgblight_config.enable) {
-                    //nrfmicro_power_enable(!rgblight_config.enable);
-                }
-#ifdef SSD1306OLED
-                //iota_gfx_init(!IS_LEFT_HAND); // enable the OLED screen
-#endif
-            }
-            break;
-
-        case QWERTY:
-            if (record->event.pressed) {
-                persistent_default_layer_set(1UL<<_QWERTY);
-            }
-            return false;
-            break;
-        case LOWER:
-            if (record->event.pressed) {
-                //not sure how to have keyboard check mode and set it to a variable, so my work around
-                //uses another variable that would be set to true after the first time a reactive key is pressed.
-                if (TOG_STATUS) { //TOG_STATUS checks is another reactive key currently pressed, only changes RGB mode if returns false
-                } else {
-                    TOG_STATUS = !TOG_STATUS;
-#ifdef RGBLIGHT_ENABLE
-                    //rgblight_mode(16);
-#endif
-                }
-                layer_on(_LOWER);
-                update_tri_layer_RGB(_LOWER, _RAISE, _ADJUST);
-            } else {
-#ifdef RGBLIGHT_ENABLE
-                //rgblight_mode(RGB_current_mode);   // revert RGB to initial mode prior to RGB mode change
-#endif
-                TOG_STATUS = false;
-                layer_off(_LOWER);
-                update_tri_layer_RGB(_LOWER, _RAISE, _ADJUST);
-            }
-            return false;
-            break;
-        case RAISE:
-            if (record->event.pressed) {
-                //not sure how to have keyboard check mode and set it to a variable, so my work around
-                //uses another variable that would be set to true after the first time a reactive key is pressed.
-                if (TOG_STATUS) { //TOG_STATUS checks is another reactive key currently pressed, only changes RGB mode if returns false
-                } else {
-                    TOG_STATUS = !TOG_STATUS;
-#ifdef RGBLIGHT_ENABLE
-                    //rgblight_mode(15);
-#endif
-                }
-                layer_on(_RAISE);
-                update_tri_layer_RGB(_LOWER, _RAISE, _ADJUST);
-            } else {
-#ifdef RGBLIGHT_ENABLE
-                //rgblight_mode(RGB_current_mode);  // revert RGB to initial mode prior to RGB mode change
-#endif
-                layer_off(_RAISE);
-                TOG_STATUS = false;
-                update_tri_layer_RGB(_LOWER, _RAISE, _ADJUST);
-            }
-            return false;
-            break;
-        case ADJUST:
-            if (record->event.pressed) {
-                layer_on(_ADJUST);
-            } else {
-                layer_off(_ADJUST);
-            }
-            return false;
-            break;
-            //led operations - RGB mode change now updates the RGB_current_mode to allow the right RGB mode to be set after reactive keys are released
-        case RGB_MOD:
-#ifdef RGBLIGHT_ENABLE
-            if (record->event.pressed) {
-				rgblight_mode(RGB_current_mode);
-				rgblight_step();
-				RGB_current_mode = rgblight_config.mode;
-				NRF_LOG_INFO("RGB_MOD, RGB_current_mode: %d\n", RGB_current_mode);
-			}
-#endif
-            return false;
-            break;
-        case RGBRST:
-#ifdef RGBLIGHT_ENABLE
-            if (record->event.pressed) {
-				nrfmicro_power_enable(true);
-				eeconfig_update_rgblight_default();
-				rgblight_enable();
-				RGB_current_mode = rgblight_config.mode;
-				NRF_LOG_INFO("RGBRST, RGB_current_mode: %d\n", RGB_current_mode);
-			}
-#endif
-
-#ifdef SSD1306OLED
-            //iota_gfx_init(!IS_LEFT_HAND); // enable the OLED screen
-#endif
-            break;
-
-
-
- /////////////////
- ///CUSTOM KEYS///
- ////////////////
 
         case POWER_TAB:
             if (record->event.pressed) {
@@ -464,71 +289,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
     }
 
-    if (record->event.pressed) {
-        switch(keycode) {
-            case DELBNDS:
-                //delete_bonds();
-                //super weird issue - RGBTOG overlaps DELBNDS
-                //not sure why, matrix issue probably
-                //use 3 thumb keys + reset button for now
-                NRF_LOG_INFO("DELBNDS overlaps RGBTOG, temporarily disabled");
-                return false;
-            case AD_WO_L:
-                restart_advertising_wo_whitelist();
-                return false;
-            case USB_EN:
-                set_usb_enabled(true);
-                return false;
-                break;
-            case USB_DIS:
-                set_usb_enabled(false);
-                return false;
-                break;
-            case BLE_EN:
-                set_ble_enabled(true);
-                return false;
-                break;
-            case BLE_DIS:
-                set_ble_enabled(false);
-                return false;
-                break;
-            case ADV_ID0:
-                restart_advertising_id(0);
-                return false;
-            case ADV_ID1:
-                restart_advertising_id(1);
-                return false;
-            case ADV_ID2:
-                restart_advertising_id(2);
-                return false;
-            case ADV_ID3:
-                restart_advertising_id(3);
-                return false;
-            case ADV_ID4:
-                restart_advertising_id(4);
-                return false;
-            case DEL_ID0:
-                delete_bond_id(0);
-                return false;
-            case DEL_ID1:
-                delete_bond_id(1);
-                return false;
-            case DEL_ID2:
-                delete_bond_id(2);
-                return false;
-            case DEL_ID3:
-                delete_bond_id(3);
-                return false;
-            case BATT_LV:
-                sprintf(str, "%4dmV", get_vcc());
-                send_string(str);
-                return false;
-            case ENT_DFU:
-                bootloader_jump();
-                return false;
-        }
-    }
-    else if (!record->event.pressed) {
+    if (!record->event.pressed) {
         switch (keycode) {
             case ENT_SLP:
                 sleep_mode_enter();
@@ -538,71 +299,52 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     return true;
 }
-;
+
+
+
 
 
 #ifdef SSD1306OLED
 
-void matrix_update(struct CharacterMatrix *dest,
-		const struct CharacterMatrix *source) {
-		if (memcmp(dest->display, source->display, sizeof(dest->display))) {
-			memcpy(dest->display, source->display, sizeof(dest->display));
-			dest->dirty = true;
-		}
-	}
-
-    //const char *read_host_led_state(void);
-    //const char *read_mode_icon(bool swap);
-
-	const char *read_rgb_info(void);
-
-	void matrix_render_user(struct CharacterMatrix *matrix) {
+void matrix_update(struct CharacterMatrix *dest, const struct CharacterMatrix *source) {
+    if (memcmp(dest->display, source->display, sizeof(dest->display))) {
+        memcpy(dest->display, source->display, sizeof(dest->display));
+        dest->dirty = true;
+    }
+}
 
 
-        //if (is_master)
-		{
-		    //matrix_write_ln(matrix, read_layer_state());
-		    //matrix_write_ln(matrix, read_keylog());
+const char *read_rgb_info(void);
 
-			{
-				char str[64];
+void matrix_render_user(struct CharacterMatrix *matrix) {
+    {
+        char str[64];
 
 #if (IS_LEFT_HAND)
-				sprintf (str, "Master: %s%s%s",
-					get_usb_enabled() && !get_ble_enabled() ? "USB mode":"",
-					get_ble_enabled() && ble_connected() ? "connected":"",
-					get_ble_enabled() && !ble_connected() ? "disconnected":""
-					);
+        sprintf (str, "Master: %s%s%s",
+            get_usb_enabled() && !get_ble_enabled() ? "USB mode":"",
+            get_ble_enabled() && ble_connected() ? "connected":"",
+            get_ble_enabled() && !ble_connected() ? "disconnected":""
+            );
 #else
-				sprintf(str, "Slave: %s", ble_connected() ? "connected" : "disconnected");
+        sprintf(str, "Slave: %s", ble_connected() ? "connected" : "disconnected");
 #endif
 
-				matrix_write_ln(matrix, str);
-			}
+        matrix_write_ln(matrix, str);
+    }
 
-			matrix_write_ln(matrix, read_rgb_info());
+    matrix_write_ln(matrix, read_rgb_info());
 
-			{
-				char vc[16], str[32];
-				int vcc = get_vcc();
-				sprintf(vc, "%4dmV", vcc);
-				sprintf(str, "Bat: %s USB: %s", vcc<500 || vcc>4400 ? "off   " : vc, has_usb()? "on":"off");
-				matrix_write_ln(matrix, str);
-			}
+    {
+        char vc[16], str[32];
+        int vcc = get_vcc();
+        sprintf(vc, "%4dmV", vcc);
+        sprintf(str, "Bat: %s USB: %s", vcc<500 || vcc>4400 ? "off   " : vc, has_usb()? "on":"off");
+        matrix_write_ln(matrix, str);
+    }
+}
 
-		    //matrix_write_ln(matrix, read_keylogs());
-		    //matrix_write_ln(matrix, read_mode_icon(keymap_config.swap_lalt_lgui));
-		    //matrix_write_ln(matrix, read_host_led_state());
-		    //matrix_write_ln(matrix, read_timelog());
-		}
-        //else {
-        //   matrix_write_ln(matrix, read_layer_state()); // somehow removes the dead pixel
-        //   matrix_write(matrix, read_logo());
-        //}
-
-	}
-
-	void iota_gfx_task_user(void) {
+void iota_gfx_task_user(void) {
 	ScreenOffInterval = has_usb() ? 60*10*1000 : 60*5*1000; // ms
 	struct CharacterMatrix matrix;
 	matrix_clear(&matrix);
