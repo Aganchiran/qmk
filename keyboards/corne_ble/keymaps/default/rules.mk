@@ -5,8 +5,10 @@ HELIX_ROWS = 5              # Helix Rows is 4 or 5
 LED_BACK_ENABLE = no        # LED backlight (Enable WS2812 RGB underlight.)
 LED_UNDERGLOW_ENABLE = yes  # LED underglow (Enable WS2812 RGB underlight.)
 LED_ANIMATIONS = yes        # LED animations
-OLED_ENABLE = yes            # OLED_ENABLE
+OLED_ENABLE = yes           # OLED_ENABLE
 LOCAL_GLCDFONT = yes        # use each keymaps "helixfont.h" insted of "common/glcdfont.c"
+COMMAND_ENABLE = no         # It is bugged and if this is enabled tap dance won't compile
+TAP_DANCE_ENABLE = yes
 
 define HELIX_CUSTOMISE_MSG
   $(info Helix customize)

@@ -12,17 +12,11 @@ extern rgblight_config_t rgblight_config; //This line allows macro to read curre
 #endif
 extern keymap_config_t keymap_config;
 
-static bool power_tab = false;
-static bool toggle_enable = false;
-static bool is_oneshot_enable = false;
-static uint16_t oneshot_key = KC_NO;
-static uint16_t fl_win_timer = 0;
 
 
-
-////////////////////////////////
-/////CUSTOM KEYS AND LAYERS/////
-////////////////////////////////
+//////////////////////
+/////CUSTOM ENUMS/////
+//////////////////////
 
 // Each layer gets a name for readability, which is then used in the keymap matrix below.
 // The underscores don't mean anything - you can have a layer called STUFF or any other name.
@@ -43,14 +37,24 @@ enum custom_keycodes {
     LOWER,
     RAISE,
     POWER_TAB,
-    FL_WIN,
     TOGGLE_MODS,
     ADJUST
 };
 
-// Fillers to make layering more clear
-#define _______ KC_TRNS
-#define XXXXXXX KC_NO
+enum tapdance_keys {
+    FL_WIN
+};
+
+enum tapdance_states {
+    SINGLE_TAP = 1,
+    SINGLE_HOLD = 2,
+    DOUBLE_TAP = 3
+};
+
+typedef struct {
+    bool is_press_action;
+    uint8_t state;
+} tap;
 
 
 
@@ -58,13 +62,17 @@ enum custom_keycodes {
 /////KEYMAP/////
 ////////////////
 
+// Fillers to make layering more clear
+#define _______ KC_TRNS
+#define XXXXXXX KC_NO
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_QWERTY] = LAYOUT(\
 		KC_ESC,		KC_Q,		KC_W,		KC_E,		KC_R,		KC_T,						KC_Y,		KC_U,		KC_I,		KC_O,		KC_P,		KC_TAB, \
 		KC_LSFT,	KC_A,		KC_S,		KC_D,		KC_F,		KC_G,						KC_H,		KC_J,		KC_K,		KC_L,		KC_QUOT,	RSFT_T(KC_CAPS), \
 		KC_LCTL,	KC_Z,		KC_X,		KC_C,		KC_V,		KC_B,						KC_N,		KC_M,		KC_COMM,	KC_DOT,		KC_SCLN,	KC_LALT, \
-											FL_WIN,		KC_SPC,		LT(_RAISE, KC_ENT),			KC_RALT,	KC_BSPC,	MO(_LOWER)\
+											TD(FL_WIN),	KC_SPC,		LT(_RAISE, KC_ENT),			KC_RALT,	KC_BSPC,	MO(_LOWER)\
 		),
 
 [_LOWER] = LAYOUT(\
@@ -95,6 +103,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		                                    _______,	_______,	_______,					_______,	_______,	_______\
 		)
 };
+
+
+
+//////////////////////////
+/////GLOBAL VARIABLES/////
+//////////////////////////
+
+static bool power_tab = false;
+static bool toggle_enable = false;
+static bool is_oneshot_enable = false;
+static uint16_t oneshot_key = KC_NO;
 
 
 
@@ -201,25 +220,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
 
-        case FL_WIN:
-            if (record->event.pressed) {
-                layer_on(_FL);
-                fl_win_timer = timer_read();
-            } else {
-                endPowerTab();
-                layer_off(_FL);
-
-                if(timer_elapsed(fl_win_timer) < TAPPING_TERM){
-                    if (is_oneshot_enable) {
-                        endOneShot();
-                    } else {
-                        startOneShot(KC_LWIN);
-                    }
-                }
-            }
-            return false;
-            break;
-
         case KC_BSPC:
             if (is_mod_down(KC_LSFT)) {
                 normal_key_without_mod(KC_DEL, KC_LSFT, record);
@@ -294,6 +294,75 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     return true;
 }
+
+
+
+///////////////////
+/////TAP DANCE/////
+///////////////////
+
+// Initialize tap structure associated with fl_win tap dance key
+static tap fl_win_tap_state = {
+        .is_press_action = true,
+        .state = 0
+};
+
+uint8_t cur_dance(qk_tap_dance_state_t *state);
+void fl_win_finished(qk_tap_dance_state_t *state, void *user_data);
+void fl_win_reset(qk_tap_dance_state_t *state, void *user_data);
+
+// Determine the current tap dance state
+uint8_t cur_dance(qk_tap_dance_state_t *state) {
+    if (state->count == 1) {
+        if (!state->pressed) {
+            return SINGLE_TAP;
+        } else {
+            return SINGLE_HOLD;
+        }
+    } else if (state->count == 2) {
+        return DOUBLE_TAP;
+    }
+    else return 8;
+}
+
+void fl_win_finished(qk_tap_dance_state_t *state, void *user_data) {
+    fl_win_tap_state.state = cur_dance(state);
+    switch (fl_win_tap_state.state) {
+        case SINGLE_TAP:
+            register_code(KC_LWIN);
+            break;
+
+        case SINGLE_HOLD:
+            layer_on(_FL);
+            break;
+
+        case DOUBLE_TAP:
+            startOneShot(KC_LWIN);
+            register_code(KC_LWIN);
+            break;
+    }
+}
+
+void fl_win_reset(qk_tap_dance_state_t *state, void *user_data) {
+    switch (fl_win_tap_state.state) {
+        case SINGLE_TAP:
+            unregister_code(KC_LWIN);
+            break;
+
+        case SINGLE_HOLD:
+            layer_off(_FL);
+            break;
+
+        case DOUBLE_TAP:
+            break;
+    }
+    fl_win_tap_state.state = 0;
+}
+
+qk_tap_dance_action_t tap_dance_actions[] = {
+        [FL_WIN] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, fl_win_finished, fl_win_reset)
+};
+
 
 
 
