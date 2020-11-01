@@ -46,14 +46,20 @@ set file=%keyboard%_%role%_%keymap%.hex
 ::Paths for .hex to .uf2 converter.
 set CONVERT_TO_UF2_SCRIPT=%BS_PROJ_ROOT%\keyboards\%keyboard%\uf2conv.py
 set FILE_TO_CONVERT=%BS_PROJ_ROOT%\.build\%file%
-set DESTINATION_FILE=%BS_PROJ_ROOT%\keyboards\%keyboard%\precompiled\%role%.uf2
+set DESTINATION_FILE=%BS_PROJ_ROOT%\keyboards\%keyboard%\precompiled\%keymap%_%role%.uf2
 
 ::Name of the backup file.
-set timestamp=%DATE:/=-%_%TIME::=-%
-set destinationFile=%timestamp%__%role%.uf2
+for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set "dt=%%a"
+set "YY=%dt:~2,2%" & set "YYYY=%dt:~0,4%" & set "MM=%dt:~4,2%" & set "DD=%dt:~6,2%"
+set "HH=%dt:~8,2%" & set "Min=%dt:~10,2%" & set "Sec=%dt:~12,2%"
+
+set "timestamp=%YYYY%-%MM%-%DD%_%HH%-%Min%-%Sec%"
+echo timestamp: "%timestamp%"
+
+set destinationFileBackup=%timestamp%__%role%.uf2
 
 ::Paths for copy .uf2 into the backup fonder.
-set DESTINATION_FILE_BACKUP=%BS_PROJ_ROOT%\keyboards\%keyboard%\precompiled\backup\%destinationFile%
+set DESTINATION_FILE_BACKUP=%BS_PROJ_ROOT%\keyboards\%keyboard%\precompiled\local_backup\%keymap%\%destinationFileBackup%
 
 ::::END CALCULATED PATHS::::
 
