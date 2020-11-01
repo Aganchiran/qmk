@@ -351,6 +351,7 @@ void fl_win_reset(qk_tap_dance_state_t *state, void *user_data) {
 
         case SINGLE_HOLD:
             layer_off(_FL);
+            endPowerTab();
             break;
 
         case DOUBLE_TAP:
