@@ -28,34 +28,23 @@ enum layer_number {
     _LOWER,
     _RAISE,
     _FL,
+    _WL,
     _ADJUST
 };
 
 enum custom_keycodes {
     ENT_SLP = SAFE_RANGE, /* Deep sleep mode*/
-    QWERTY,
-    LOWER,
-    RAISE,
+    ESC_FL,
+    SUPER_WIN,
     POWER_TAB,
     TOGGLE_MODS,
     QUOTES,
-    ADJUST
+    DT_RIGHT,
+    DT_LEFT,
+    WIN_SS,
+    WIN_NEW_DT,
+    POWER
 };
-
-enum tapdance_keys {
-    FL_WIN
-};
-
-enum tapdance_states {
-    SINGLE_TAP = 1,
-    SINGLE_HOLD = 2,
-    DOUBLE_TAP = 3
-};
-
-typedef struct {
-    bool is_press_action;
-    uint8_t state;
-} tap;
 
 
 
@@ -72,10 +61,10 @@ typedef struct {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_QWERTY] = LAYOUT(\
-		KC_ESC,		KC_Q,		KC_W,		KC_E,		KC_R,		KC_T,						KC_Y,		KC_U,		KC_I,		KC_O,		KC_P,		KC_TAB, \
-		KC_LSFT,	KC_A,		KC_S,		KC_D,		KC_F,		KC_G,						KC_H,		KC_J,		KC_K,		KC_L,		QUOTES,	    RSFT_T(KC_CAPS), \
+		SUPER_WIN,	KC_Q,		KC_W,		KC_E,		KC_R,		KC_T,						KC_Y,		KC_U,		KC_I,		KC_O,		KC_P,		KC_TAB, \
+		KC_LSFT,	KC_A,		KC_S,		KC_D,		KC_F,		KC_G,						KC_H,		RGB_TOG,	KC_K,		KC_L,		QUOTES,	    RSFT_T(KC_CAPS), \
 		KC_LCTL,	KC_Z,		KC_X,		KC_C,		KC_V,		KC_B,						KC_N,		KC_M,		KC_COMM,	KC_DOT,		KC_SCLN,	KC_LALT, \
-											TD(FL_WIN), KC_SPC,     RAISE_ENT,			        KC_RALT,	KC_BSPC,	LOWER\
+											ESC_FL,     KC_SPC,     RAISE_ENT,			        KC_RALT,	KC_BSPC,	LOWER\
 		),
 
 [_LOWER] = LAYOUT(\
@@ -93,10 +82,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		),
 
 [_FL] = LAYOUT(\
-		POWER_TAB,	KC_7,		KC_8,		KC_9,		KC_PAST,	KC_PSLS,					KC_BSLS,	KC_F10,     KC_F7,		KC_F8,		KC_F9,		_______, \
-		_______,	KC_4,		KC_5,		KC_6,		KC_PPLS,	KC_PMNS,					XXXXXXX,	KC_F11,     KC_F4,		KC_F5,		KC_F6,		_______, \
-		_______,	KC_1,		KC_2,		KC_3,		KC_0,		KC_EQL,						XXXXXXX,	KC_F12,		KC_F1,		KC_F2,		KC_F3,		_______, \
+		POWER_TAB,	KC_P7,		KC_P8,		KC_P9,		KC_PAST,	KC_PSLS,					KC_BSLS,	KC_F10,     KC_F7,		KC_F8,		KC_F9,		_______, \
+		_______,	KC_P4,		KC_P5,		KC_P6,		KC_PPLS,	KC_PMNS,					KC_PDOT,	KC_F11,     KC_F4,		KC_F5,		KC_F6,		_______, \
+		_______,	KC_P1,		KC_P2,		KC_P3,		KC_P0,		KC_EQL,						KC_NLCK,	KC_F12,		KC_F1,		KC_F2,		KC_F3,		_______, \
 											_______,	_______,	_______,					_______,	KC_DEL,		_______\
+		),
+
+[_WL] = LAYOUT(\
+		_______,	XXXXXXX,    DT_LEFT,    KC_UP,      DT_RIGHT,   XXXXXXX,                    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    _______, \
+		_______,	XXXXXXX,    KC_LEFT,    KC_DOWN,    KC_RGHT,    XXXXXXX,                    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    _______, \
+		_______,	XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,                    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    _______, \
+											WIN_SS,	    WIN_NEW_DT,	_______,					_______,	KC_DEL,		_______\
 		),
 
 [_ADJUST] = LAYOUT(\
@@ -116,7 +112,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 static bool power_tab = false;
 static bool toggle_enable = false;
 static bool is_oneshot_enable = false;
+
 static uint16_t oneshot_key = KC_NO;
+static uint32_t fl_esc_timer = 0;
 
 
 
@@ -124,7 +122,6 @@ static uint16_t oneshot_key = KC_NO;
 /////FUNCTIONS/////
 ///////////////////
 
-void nrfmicro_power_enable(bool enable);
 bool has_usb(void);
 
 uint32_t layer_state_set_user(uint32_t state) {
@@ -173,6 +170,14 @@ void toggle_mod(uint16_t modifier, keyrecord_t *record) {
     }
 }
 
+void normal_layer(uint16_t layercode, keyrecord_t *record) {
+    if (record->event.pressed) {
+        layer_on(layercode);
+    } else {
+        layer_off(layercode);
+    }
+}
+
 void startPowerTab() {
     if (!power_tab) {
         power_tab = true;
@@ -203,6 +208,8 @@ void endOneShot() {
     }
 }
 
+
+
 ///////////////////////////////
 /////CUSTOM KEY BEHAVIOURS/////
 ///////////////////////////////
@@ -218,16 +225,62 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case QUOTES:
             normal_key(KC_QUOTE, record);
             normal_key(KC_SPC, record);
+
             return false;
-            break;
 
         case POWER_TAB:
             if (record->event.pressed) {
                 startPowerTab();
             }
             normal_key(KC_TAB, record);
+
             return false;
-            break;
+
+        case SUPER_WIN:
+            normal_layer(_WL, record);
+            normal_key(KC_LWIN, record);
+
+            return false;
+
+        case DT_RIGHT:
+            normal_key(KC_LCTRL, record);
+            normal_key(KC_RIGHT, record);
+
+            return false;
+
+        case DT_LEFT:
+            normal_key(KC_LCTRL, record);
+            normal_key(KC_LEFT, record);
+
+            return false;
+
+        case WIN_SS:
+            normal_key(KC_LSFT, record);
+            normal_key(KC_S, record);
+
+            return false;
+
+        case WIN_NEW_DT:
+            normal_key(KC_LCTRL, record);
+            normal_key(KC_D, record);
+
+            return false;
+
+        case ESC_FL:
+            normal_layer(_FL, record);
+
+            if (record->event.pressed) {
+                fl_esc_timer = timer_read();
+            } else {
+                endPowerTab();
+
+                if (timer_elapsed(fl_esc_timer) < TAPPING_TERM) {
+                    register_code(KC_ESC);
+                    unregister_code(KC_ESC);
+                }
+            }
+
+            return false;
 
         case KC_BSPC:
             if (is_mod_down(KC_LSFT)) {
@@ -235,8 +288,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 normal_key(KC_BSPC, record);
             }
+
             return false;
-            break;
 
         case KC_LSFT:
             if (!record->event.pressed) {
@@ -248,8 +301,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 normal_key(KC_LSFT, record);
             }
+
             return false;
-            break;
 
         case KC_LCTL:
             if (toggle_enable) {
@@ -257,8 +310,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 normal_key(KC_LCTL, record);
             }
+
             return false;
-            break;
 
         case KC_LALT:
             if (toggle_enable) {
@@ -266,8 +319,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 normal_key(KC_LALT, record);
             }
+
             return false;
-            break;
 
         case TOGGLE_MODS:
             if (record->event.pressed) {
@@ -282,18 +335,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     toggle_enable = true;
                 }
             }
-            return false;
-            break;
 
-        case RGB_TOG:
-            nrfmicro_power_enable(rgblight_config.enable);
-            break;
             return false;
 
         case ENT_SLP:
             if (!record->event.pressed) {
                 sleep_mode_enter();
             }
+
             return false;
     }
 
@@ -303,76 +352,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     return true;
 }
-
-
-
-///////////////////
-/////TAP DANCE/////
-///////////////////
-
-// Initialize tap structure associated with fl_win tap dance key
-static tap fl_win_tap_state = {
-        .is_press_action = true,
-        .state = 0
-};
-
-uint8_t cur_dance(qk_tap_dance_state_t *state);
-void fl_win_finished(qk_tap_dance_state_t *state, void *user_data);
-void fl_win_reset(qk_tap_dance_state_t *state, void *user_data);
-
-// Determine the current tap dance state
-uint8_t cur_dance(qk_tap_dance_state_t *state) {
-    if (state->count == 1) {
-        if (!state->pressed) {
-            return SINGLE_TAP;
-        } else {
-            return SINGLE_HOLD;
-        }
-    } else if (state->count == 2) {
-        return DOUBLE_TAP;
-    }
-    else return 8;
-}
-
-void fl_win_finished(qk_tap_dance_state_t *state, void *user_data) {
-    fl_win_tap_state.state = cur_dance(state);
-    switch (fl_win_tap_state.state) {
-        case SINGLE_TAP:
-            register_code(KC_LWIN);
-            break;
-
-        case SINGLE_HOLD:
-            layer_on(_FL);
-            break;
-
-        case DOUBLE_TAP:
-            startOneShot(KC_LWIN);
-            register_code(KC_LWIN);
-            break;
-    }
-}
-
-void fl_win_reset(qk_tap_dance_state_t *state, void *user_data) {
-    switch (fl_win_tap_state.state) {
-        case SINGLE_TAP:
-            unregister_code(KC_LWIN);
-            break;
-
-        case SINGLE_HOLD:
-            layer_off(_FL);
-            endPowerTab();
-            break;
-
-        case DOUBLE_TAP:
-            break;
-    }
-    fl_win_tap_state.state = 0;
-}
-
-qk_tap_dance_action_t tap_dance_actions[] = {
-        [FL_WIN] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, fl_win_finished, fl_win_reset)
-};
-
 
 
 

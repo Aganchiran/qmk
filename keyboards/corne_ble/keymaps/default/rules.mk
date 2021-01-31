@@ -8,7 +8,6 @@ LED_ANIMATIONS = yes        # LED animations
 OLED_ENABLE = yes           # OLED_ENABLE
 LOCAL_GLCDFONT = yes        # use each keymaps "helixfont.h" insted of "common/glcdfont.c"
 COMMAND_ENABLE = no         # It is bugged and if this is enabled tap dance won't compile
-TAP_DANCE_ENABLE = yes
 
 define HELIX_CUSTOMISE_MSG
   $(info Helix customize)
