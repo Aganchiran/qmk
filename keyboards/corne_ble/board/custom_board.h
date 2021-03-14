@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #ifdef USE_NRFMICRO_1_3
-#define USE_TP4054_CTRL
+#define USE_MCP73831_CTRL
 #define USE_VCC_POWER_PIN
 #define USE_BATTERY_PIN
 #define BATTERY_R1 820

@@ -27,23 +27,26 @@ enum layer_number {
     _QWERTY = 0,
     _LOWER,
     _RAISE,
-    _FL,
+    _NUM,
     _WL,
+    _POW,
     _ADJUST
 };
 
 enum custom_keycodes {
     ENT_SLP = SAFE_RANGE, /* Deep sleep mode*/
-    ESC_FL,
+    ESC_POW,
     SUPER_WIN,
-    POWER_TAB,
+    ALT_TAB,
+    CTRL_TAB,
     TOGGLE_MODS,
     QUOTES,
+    SING,
     DT_RIGHT,
     DT_LEFT,
     WIN_SS,
     WIN_NEW_DT,
-    POWER
+    XOR
 };
 
 
@@ -56,22 +59,19 @@ enum custom_keycodes {
 #define _______     KC_TRNS
 #define XXXXXXX     KC_NO
 #define RAISE_ENT   LT(_RAISE, KC_ENT)
+#define SPC_NUM     LT(_NUM, KC_SPC)
 #define LOWER       MO(_LOWER)
+#define RSFT_CAPS   RSFT_T(KC_CAPS)
+#define CURL_OPEN   RSFT(KC_LBRC)
+#define CURL_CLOSE  RSFT(KC_RBRC)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_QWERTY] = LAYOUT(\
 		SUPER_WIN,	KC_Q,		KC_W,		KC_E,		KC_R,		KC_T,						KC_Y,		KC_U,		KC_I,		KC_O,		KC_P,		KC_TAB, \
-		KC_LSFT,	KC_A,		KC_S,		KC_D,		KC_F,		KC_G,						KC_H,		RGB_TOG,	KC_K,		KC_L,		QUOTES,	    RSFT_T(KC_CAPS), \
-		KC_LCTL,	KC_Z,		KC_X,		KC_C,		KC_V,		KC_B,						KC_N,		KC_M,		KC_COMM,	KC_DOT,		KC_SCLN,	KC_LALT, \
-											ESC_FL,     KC_SPC,     RAISE_ENT,			        KC_RALT,	KC_BSPC,	LOWER\
-		),
-
-[_LOWER] = LAYOUT(\
-		_______,	KC_DQUO,	KC_LWIN,	KC_EXLM,	KC_QUES,	XXXXXXX,					KC_AMPR,	KC_PIPE,	KC_PSCR,	XXXXXXX,	KC_PERC,	_______, \
-		_______,	KC_AT,		KC_DLR,		KC_LPRN,	KC_RPRN,	XXXXXXX,					KC_HASH,	XXXXXXX,	XXXXXXX,	XXXXXXX,	KC_GRV,		_______, \
-		_______,	XXXXXXX,	KC_CIRC,	KC_LBRC,	KC_RBRC,	LSFT(KC_MINS),				XXXXXXX,	KC_MINS,	XXXXXXX,	XXXXXXX,	TOGGLE_MODS,_______, \
-											_______,	_______,	_______,					_______,	_______,	_______\
+		KC_LSFT,	KC_A,		KC_S,		KC_D,		KC_F,	    KC_G,						KC_H,		KC_J,	    KC_K,		KC_L,		QUOTES,	    RSFT_CAPS, \
+		KC_LCTL,	KC_Z,		KC_X,		KC_C,		KC_V,		KC_B,						KC_N,		KC_M,		KC_COMM,	KC_DOT,		KC_SCLN,	KC_MINS, \
+											ESC_POW,    SPC_NUM,    RAISE_ENT,			        KC_LALT,	KC_BSPC,	KC_RALT\
 		),
 
 [_RAISE] = LAYOUT(\
@@ -81,18 +81,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 											_______,	_______,	_______,					_______,	_______,	_______\
 		),
 
-[_FL] = LAYOUT(\
-		POWER_TAB,	KC_P7,		KC_P8,		KC_P9,		KC_PAST,	KC_PSLS,					KC_BSLS,	KC_F10,     KC_F7,		KC_F8,		KC_F9,		_______, \
-		_______,	KC_P4,		KC_P5,		KC_P6,		KC_PPLS,	KC_PMNS,					KC_PDOT,	KC_F11,     KC_F4,		KC_F5,		KC_F6,		_______, \
-		_______,	KC_P1,		KC_P2,		KC_P3,		KC_P0,		KC_EQL,						KC_NLCK,	KC_F12,		KC_F1,		KC_F2,		KC_F3,		_______, \
-											_______,	_______,	_______,					_______,	KC_DEL,		_______\
+[_NUM] = LAYOUT(\
+		KC_BSLS,	KC_PSLS,    KC_P7,		KC_P8,		KC_P9,		KC_PAST,					KC_AMPR,	KC_LPRN,	KC_RPRN,	KC_EXLM,	KC_CALC,    KC_NLCK, \
+		KC_PERC,	KC_PMNS,    KC_P4,		KC_P5,		KC_P6,		KC_PPLS,					KC_PIPE,	CURL_OPEN,	CURL_CLOSE, KC_QUES,    KC_PDOT,    _______, \
+		_______,	KC_EQL,	    KC_P1,		KC_P2,		KC_P3,		KC_P0,						XOR,	    KC_LBRC,	KC_RBRC,	SING,	    KC_COMM,    _______, \
+											_______,	_______,	_______,					_______,	_______,	_______\
 		),
 
-[_WL] = LAYOUT(\
-		_______,	XXXXXXX,    DT_LEFT,    KC_UP,      DT_RIGHT,   XXXXXXX,                    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    _______, \
-		_______,	XXXXXXX,    KC_LEFT,    KC_DOWN,    KC_RGHT,    XXXXXXX,                    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    _______, \
-		_______,	XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,                    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    _______, \
-											WIN_SS,	    WIN_NEW_DT,	_______,					_______,	KC_DEL,		_______\
+[_POW] = LAYOUT(\
+		ALT_TAB,	KC_DQUO,	XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,					XXXXXXX,	KC_F10,     KC_F7,		KC_F8,		KC_F9,		XXXXXXX, \
+		_______,	KC_AT,		KC_DLR,		KC_PDOT,	XXXXXXX,	XXXXXXX,					KC_HASH,	KC_F11,     KC_F4,		KC_F5,		KC_F6,		_______, \
+		CTRL_TAB,	XXXXXXX,	XXXXXXX,	KC_CIRC,	XXXXXXX,	XXXXXXX,					XXXXXXX,	KC_F12,		KC_F1,		KC_F2,		KC_F3,		_______, \
+											_______,	_______,	_______,					_______,	_______,	_______\
 		),
 
 [_ADJUST] = LAYOUT(\
@@ -100,6 +100,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		_______,	RGB_MOD,	RGB_SAI,	RGB_HUI,	XXXXXXX,	RGB_VAI,					RGB_M_K,	RGB_M_X,	RGB_M_G,	RGB_M_T,	XXXXXXX,	_______, \
 		_______,	RGB_RMOD,	RGB_SAD,	RGB_HUD,	XXXXXXX,	RGB_VAD,					XXXXXXX,	XXXXXXX,	XXXXXXX,	XXXXXXX,	ENT_SLP,	_______, \
 		                                    _______,	_______,	_______,					_______,	_______,	_______\
+		),
+
+[_WL] = LAYOUT(\
+		SUPER_WIN,	XXXXXXX,    DT_LEFT,    KC_UP,      DT_RIGHT,   KC_TAB,                     XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    TOGGLE_MODS, \
+		_______,	XXXXXXX,    KC_LEFT,    KC_DOWN,    KC_RGHT,    XXXXXXX,                    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    _______, \
+		_______,	XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,                    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    XXXXXXX,    _______, \
+											WIN_SS,	    WIN_NEW_DT,	_______,					_______,	_______,	_______\
 		)
 };
 
@@ -109,12 +116,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /////GLOBAL VARIABLES/////
 //////////////////////////
 
-static bool power_tab = false;
+static bool alt_tab = false;
+static bool ctrl_tab = false;
 static bool toggle_enable = false;
 static bool is_oneshot_enable = false;
 
 static uint16_t oneshot_key = KC_NO;
-static uint32_t fl_esc_timer = 0;
+static uint32_t esc_pow_timer = 0;
 
 
 
@@ -125,7 +133,7 @@ static uint32_t fl_esc_timer = 0;
 bool has_usb(void);
 
 uint32_t layer_state_set_user(uint32_t state) {
-    return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+    return update_tri_layer_state(state, _NUM, _RAISE, _ADJUST);
 }
 
 void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
@@ -178,17 +186,31 @@ void normal_layer(uint16_t layercode, keyrecord_t *record) {
     }
 }
 
-void startPowerTab() {
-    if (!power_tab) {
-        power_tab = true;
+void startAltTab() {
+    if (!alt_tab) {
+        alt_tab = true;
         register_code(KC_LALT);
     }
 }
 
-void endPowerTab() {
-    if (power_tab) {
-        power_tab = false;
+void endAltTab() {
+    if (alt_tab) {
+        alt_tab = false;
         unregister_code(KC_LALT);
+    }
+}
+
+void startCtrlTab() {
+    if (!ctrl_tab) {
+        ctrl_tab = true;
+        register_code(KC_LCTL);
+    }
+}
+
+void endCtrlTab() {
+    if (ctrl_tab) {
+        ctrl_tab = false;
+        unregister_code(KC_LCTL);
     }
 }
 
@@ -228,9 +250,37 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
             return false;
 
-        case POWER_TAB:
+        case SING:
+            register_code(KC_LSFT);
+            normal_key(KC_GRV, record);
+            unregister_code(KC_LSFT);
+
+            normal_key(KC_SPC, record);
+
+            return false;
+
+        case XOR:
+            register_code(KC_LSFT);
+            normal_key(KC_6, record);
+            unregister_code(KC_LSFT);
+
+            normal_key(KC_SPC, record);
+
+            return false;
+
+        case ALT_TAB:
             if (record->event.pressed) {
-                startPowerTab();
+                endCtrlTab();
+                startAltTab();
+            }
+            normal_key(KC_TAB, record);
+
+            return false;
+
+        case CTRL_TAB:
+            if (record->event.pressed) {
+                endAltTab();
+                startCtrlTab();
             }
             normal_key(KC_TAB, record);
 
@@ -266,15 +316,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
             return false;
 
-        case ESC_FL:
-            normal_layer(_FL, record);
+        case ESC_POW:
+            normal_layer(_POW, record);
 
             if (record->event.pressed) {
-                fl_esc_timer = timer_read();
+                esc_pow_timer = timer_read();
             } else {
-                endPowerTab();
+                endAltTab();
+                endCtrlTab();
 
-                if (timer_elapsed(fl_esc_timer) < TAPPING_TERM) {
+                if (timer_elapsed(esc_pow_timer) < TAPPING_TERM) {
                     register_code(KC_ESC);
                     unregister_code(KC_ESC);
                 }
