@@ -123,22 +123,22 @@ void nrfmicro_update(void) {
 
     check_ble_switch(false);
 
-#ifdef SSD1306OLED
-
     if (was_led_enabled != is_led_enabled) {
 
         if (!was_led_enabled && is_led_enabled) {
             nrfmicro_power_enable(true);
+#ifdef SSD1306OLED
             nrf_delay_ms(2000);
             iota_gfx_init(!IS_LEFT_HAND);
+#endif
         } else {
+#ifdef SSD1306OLED
             iota_gfx_off();
             nrf_delay_ms(2000);
+#endif
             nrfmicro_power_enable(false);
         }
     }
-
-#endif
 
     was_led_enabled = is_led_enabled;
 }

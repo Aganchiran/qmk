@@ -11,6 +11,6 @@ SRC += ssd1306.c
 
 NRF_SEPARATE = slave
 
-OLED_ENABLE = yes
+#OLED_ENABLE = yes
 
 OPT_DEFS += -DOLED_ENABLE
